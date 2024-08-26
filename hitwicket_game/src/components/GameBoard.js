@@ -2,106 +2,194 @@ import React, { useState } from 'react';
 import '../styles/GameBoard.css'; // Ensure this path matches where your CSS file is located
 
 const GameBoard = () => {
-    const initialBoard = [
-      ['R1', 'K1', 'Q1', 'B1', 'N1'],  // Player 1's major pieces
-      ['P1', 'P1', 'P1', 'P1', 'P1'],  // Player 1's pawns
-      [null, null, null, null, null],
-      [null, null, null, null, null],  // Empty row
-      ['P2', 'P2', 'P2', 'P2', 'P2'],  // Player 2's pawns
-      ['R2', 'K2', 'Q2', 'B2', 'N2'],  // Player 2's major pieces
-    ];
-  
-    const [board, setBoard] = useState(initialBoard); // Fix: useState is now imported
-    const [isPlayerOneTurn, setIsPlayerOneTurn] = useState(true);
-    const [gameStatus, setGameStatus] = useState("Player 1's turn");
-  
-    const handleClick = (rowIndex, colIndex) => {
-        const piece = board[rowIndex][colIndex];
-        if (!piece || gameStatus !== "Game in progress") return;
-    
-        // Check if the piece is a pawn
-        const isPawn = piece.startsWith('P');
-        if (!isPawn) return;
-    
-        const newBoard = board.map(row => row.slice()); // Create a deep copy of the board
-    
-        let newRow = rowIndex;
-    
-        // Determine the movement based on the player's turn and initial position
-        if (isPlayerOneTurn) {
-            // Player 1's pawn logic
-            if (rowIndex === 1 && !newBoard[rowIndex - 2][colIndex]) {
-                // If on initial row, allow two-step movement
-                newRow = rowIndex - 2;
-            } else if (rowIndex > 0 && !newBoard[rowIndex - 1][colIndex]) {
-                // Otherwise, move one step forward
-                newRow = rowIndex - 1;
-            } else {
-                return; // Invalid move
+  const [board, setBoard] = useState(Array(5).fill().map(() => Array(5).fill(null)));
+  const [currentPlayer, setCurrentPlayer] = useState('A');
+  const [setupPhase, setSetupPhase] = useState(true);
+  const [playerASetup, setPlayerASetup] = useState('');
+  const [playerBSetup, setPlayerBSetup] = useState('');
+  const [moveInput, setMoveInput] = useState('');
+  const [gameStatus, setGameStatus] = useState('Player A: Set up your characters');
+
+  const characterTypes = ['P', 'H1', 'H2'];
+
+  const isValidSetup = (setup) => {
+    const characters = setup.split(',').map(char => char.trim());
+    const isValidCount = characters.length === 5;
+    const isValidChars = characters.every(char => characterTypes.includes(char));
+    return isValidCount && isValidChars;
+  };
+
+  const setupBoard = () => {
+    const newBoard = Array(5).fill().map(() => Array(5).fill(null));
+    playerASetup.split(',').forEach((char, index) => {
+      newBoard[0][index] = `A-${char.trim()}`;
+    });
+    playerBSetup.split(',').forEach((char, index) => {
+      newBoard[4][index] = `B-${char.trim()}`;
+    });
+    setBoard(newBoard);
+    setSetupPhase(false);
+    setGameStatus("Player A's turn");
+  };
+
+  const handleSetupInput = (e) => {
+    const setup = e.target.value.toUpperCase();
+    currentPlayer === 'A' ? setPlayerASetup(setup) : setPlayerBSetup(setup);
+  };
+
+  const handleSetupSubmit = () => {
+    const setup = currentPlayer === 'A' ? playerASetup : playerBSetup;
+    if (isValidSetup(setup)) {
+      if (currentPlayer === 'A') {
+        setCurrentPlayer('B');
+        setGameStatus("Player B: Set up your characters");
+      } else {
+        setupBoard();
+      }
+    } else {
+      alert("Invalid setup. Please use 5 characters (P, H1, H2) separated by commas.");
+    }
+  };
+
+  const isValidMove = (char, move) => {
+    const [type] = char.split('-');
+    if (!characterTypes.includes(type)) return false;
+    if (type === 'P' || type === 'H1') return ['L', 'R', 'F', 'B'].includes(move);
+    if (type === 'H2') return ['FL', 'FR', 'BL', 'BR'].includes(move);
+    return false;
+  };
+
+  const getNewPosition = (row, col, char, move) => {
+    const [type] = char.split('-');
+    const distance = type.startsWith('H') ? 2 : 1;
+    const direction = currentPlayer === 'A' ? 1 : -1;
+
+    switch (move) {
+      case 'L': return [row, col - distance];
+      case 'R': return [row, col + distance];
+      case 'F': return [row + (distance * direction), col];
+      case 'B': return [row - (distance * direction), col];
+      case 'FL': return [row + (distance * direction), col - distance];
+      case 'FR': return [row + (distance * direction), col + distance];
+      case 'BL': return [row - (distance * direction), col - distance];
+      case 'BR': return [row - (distance * direction), col + distance];
+      default: return [row, col];
+    }
+  };
+
+  const isInBounds = (row, col) => row >= 0 && row < 5 && col >= 0 && col < 5;
+
+  const makeMove = (charName, move) => {
+    const newBoard = board.map(row => [...row]);
+    let charFound = false;
+
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j < 5; j++) {
+        if (newBoard[i][j] === `${currentPlayer}-${charName}`) {
+          const [newRow, newCol] = getNewPosition(i, j, charName, move);
+
+          if (!isInBounds(newRow, newCol)) {
+            alert("Invalid move: Out of bounds");
+            return;
+          }
+
+          if (newBoard[newRow][newCol] && newBoard[newRow][newCol].startsWith(currentPlayer)) {
+            alert("Invalid move: Cannot target friendly character");
+            return;
+          }
+
+          // Handle Hero1 and Hero2 path clearing
+          if (charName.startsWith('H')) {
+            const midRow = Math.floor((i + newRow) / 2);
+            const midCol = Math.floor((j + newCol) / 2);
+            if (newBoard[midRow][midCol] && !newBoard[midRow][midCol].startsWith(currentPlayer)) {
+              newBoard[midRow][midCol] = null;
             }
-        } else {
-            // Player 2's pawn logic
-            if (rowIndex === 3 && !newBoard[rowIndex + 2][colIndex]) {
-                // If on initial row, allow two-step movement
-                newRow = rowIndex + 2;
-            } else if (rowIndex < 4 && !newBoard[rowIndex + 1][colIndex]) {
-                // Otherwise, move one step forward
-                newRow = rowIndex + 1;
-            } else {
-                return; // Invalid move
-            }
+          }
+
+          newBoard[newRow][newCol] = `${currentPlayer}-${charName}`;
+          newBoard[i][j] = null;
+          charFound = true;
+          break;
         }
-    
-        // Move the piece to the new position
-        newBoard[rowIndex][colIndex] = null; // Clear the original position
-        newBoard[newRow][colIndex] = piece; // Place the piece in the new position
-        setBoard(newBoard); // Update the board state
-    
-        // Check for a winner
-        const winner = checkWinner(newBoard);
-        if (winner) {
-            setGameStatus(`Player ${winner} wins!`);
-        } else {
-            // Switch turns
-            setIsPlayerOneTurn(!isPlayerOneTurn);
-            setGameStatus(`Player ${isPlayerOneTurn ? 2 : 1}'s turn`);
-        }
-    };
-    
-    const checkWinner = (board) => {
-        // Check for win condition: any P1 reaching row 0 or any P2 reaching row 4
-        const player1Wins = board[0].some(cell => cell && cell.startsWith('P1'));
-        const player2Wins = board[4].some(cell => cell && cell.startsWith('P2'));
-    
-        if (player1Wins) return 1;
-        if (player2Wins) return 2;
-    
-        return null;
-    };
-    
-    
-  
-    return (
-        <div className="game-container">
-            <h1>5x5 Chess-like Game</h1>
-            <h2>{isPlayerOneTurn ? "Player 1's turn" : "Player 2's turn"}</h2>
-            <div className="game-board">
-                {board.map((row, rowIndex) =>
-                    row.map((cell, colIndex) => (
-                        <div
-                            key={`${rowIndex}-${colIndex}`}
-                            className={`cell ${(rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark'}`}
-                            onClick={() => handleClick(rowIndex, colIndex)}
-                        >
-                            {cell}
-                        </div>
-                    ))
-                )}
-            </div>
-            {/* Display Player 2 below the board */}
-            <h2>Player 2</h2>
+      }
+      if (charFound) break;
+    }
+
+    if (!charFound) {
+      alert("Invalid move: Character not found");
+      return;
+    }
+
+    setBoard(newBoard);
+    setCurrentPlayer(currentPlayer === 'A' ? 'B' : 'A');
+    setGameStatus(`Player ${currentPlayer === 'A' ? 'B' : 'A'}'s turn`);
+    checkWinCondition(newBoard);
+  };
+
+  const handleMoveInput = (e) => {
+    setMoveInput(e.target.value.toUpperCase());
+  };
+
+  const handleMoveSubmit = () => {
+    const [charName, move] = moveInput.split(':');
+    if (isValidMove(charName, move)) {
+      makeMove(charName, move);
+      setMoveInput('');
+    } else {
+      alert("Invalid move format. Please use format 'CharName:Move' (e.g., P:L, H1:F, H2:FL)");
+    }
+  };
+
+  const checkWinCondition = (board) => {
+    const playerAAlive = board.some(row => row.some(cell => cell && cell.startsWith('A')));
+    const playerBAlive = board.some(row => row.some(cell => cell && cell.startsWith('B')));
+
+    if (!playerAAlive) {
+      setGameStatus("Player B wins!");
+    } else if (!playerBAlive) {
+      setGameStatus("Player A wins!");
+    }
+  };
+
+  return (
+    <div className="game-container">
+      <h1>5x5 Character Battle Game</h1>
+      <h2>{gameStatus}</h2>
+      {setupPhase ? (
+        <div>
+          <input 
+            type="text" 
+            value={currentPlayer === 'A' ? playerASetup : playerBSetup} 
+            onChange={handleSetupInput} 
+            placeholder="Enter 5 characters (P, H1, H2) separated by commas"
+          />
+          <button onClick={handleSetupSubmit}>Submit Setup</button>
         </div>
-    );
+      ) : (
+        <div>
+          <div className="game-board">
+            {board.map((row, rowIndex) => (
+              <div key={rowIndex} className="row">
+                {row.map((cell, colIndex) => (
+                  <div key={colIndex} className="cell">
+                    {cell}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <input 
+            type="text" 
+            value={moveInput} 
+            onChange={handleMoveInput} 
+            placeholder="Enter move (e.g., P:L, H1:F, H2:FL)"
+          />
+          <button onClick={handleMoveSubmit}>Submit Move</button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default GameBoard;

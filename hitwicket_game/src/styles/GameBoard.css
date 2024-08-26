@@ -1,132 +1,134 @@
-/* GameContainer Styles */
+/* Container for the entire game */
 .game-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 50px;
-  background: linear-gradient(to right, #e2e2e2, #ffffff); /* Light gradient background */
+  text-align: center;
+  font-family: 'Roboto', Arial, sans-serif;
   padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Soft shadow around the container */
-  max-width: 700px; /* Limit maximum width */
-  margin: 20px auto; /* Center horizontally with margin */
-  transition: box-shadow 0.3s ease;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 800px;
 }
 
-.game-container:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
-}
-
-/* Header Styles */
-h1 {
-  font-family: 'Roboto', sans-serif; /* Custom font */
-  color: #333;
-  margin-bottom: 10px;
-  font-size: 2em; /* Increase font size */
-}
-
-h2 {
-  font-family: 'Roboto', sans-serif; /* Custom font */
-  color: #666;
-  margin-bottom: 20px;
-  font-size: 1.2em; /* Slightly larger font size */
-}
-
-/* GameBoard Styles */
+/* Grid setup for the game board */
 .game-board {
   display: grid;
-  grid-template-columns: repeat(5, 70px); /* Increased cell size for better appearance */
-  grid-template-rows: repeat(5, 70px); /* Increased cell size */
-  gap: 5px; /* Space between cells */
-  border: 3px solid #444; /* Thicker border around the grid */
-  padding: 5px;
-  background: radial-gradient(circle, #f5f5f5, #cccccc); /* Radial gradient background */
-  border-radius: 10px; /* Rounded corners for the board */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Shadow around the board */
+  grid-template-columns: repeat(5, 90px);
+  grid-template-rows: repeat(5, 90px);
+  gap: 12px;
+  justify-content: center;
+  margin: 30px auto;
+  perspective: 1000px;
 }
 
-/* Cell Styles */
+/* Styling for each cell in the grid */
 .cell {
-  width: 70px; /* Increased width */
-  height: 70px; /* Increased height */
-  background-color: #fff; /* White background */
+  width: 90px;
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px; /* Larger font size */
+  border: 2px solid #a0a0a0;
+  background-color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  border: 2px solid #bbb; /* Slightly thicker border for cells */
-  border-radius: 8px; /* Rounded corners for cells */
-  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
-  background: linear-gradient(to bottom, #ffffff, #f0f0f0); /* Subtle gradient on cells */
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform-style: preserve-3d;
 }
 
 .cell:hover {
-  background-color: #e0e0e0; /* Hover effect */
-  transform: scale(1.1); /* Slightly scale up on hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Add shadow on hover */
+  transform: translateY(-5px) rotateX(10deg);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
-.cell.light {
-  background-color: #f9f9f9; /* Light color for cells */
+/* Style for player A's characters */
+.cell[class*="A-"] {
+  color: #1e88e5;
+  background-color: rgba(30, 136, 229, 0.1);
 }
 
-.cell.dark {
-  background-color: #dcdcdc; /* Dark color for cells */
+/* Style for player B's characters */
+.cell[class*="B-"] {
+  color: #e53935;
+  background-color: rgba(229, 57, 53, 0.1);
 }
 
-.cell.animated {
-  animation: pulse 1s infinite; /* Pulse animation for special cells */
+/* Status area styling */
+h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
-/* Piece Effects */
-.cell:active {
-  box-shadow: 0 0 10px 2px rgba(0, 255, 100, 0.5); /* Glow effect on active pieces */
-  transform: scale(1.15); /* Slightly larger on click */
+/* Input styling */
+input[type="text"] {
+  width: 80%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 16px;
+  border: 2px solid #a0a0a0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
-.cell.moving {
-  animation: move 0.5s ease-in-out; /* Animation when a piece moves */
+input[type="text"]:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+  outline: none;
 }
 
-@keyframes move {
-  0% {
-    transform: translateY(-5px);
-  }
-  50% {
-    transform: translateY(5px);
-  }
-  100% {
-    transform: translateY(0);
-  }
+/* Button styling */
+button {
+  padding: 12px 20px;
+  margin: 8px;
+  background: linear-gradient(45deg, #4caf50, #45a049);
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Winning Row Animation */
-.winning-row .cell {
-  animation: winning-glow 1s infinite alternate; /* Glow effect for winning row */
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(45deg, #45a049, #4caf50);
 }
 
-@keyframes winning-glow {
-  0% {
-    background-color: #ffd700; /* Gold for winning row */
-    transform: scale(1);
-  }
-  100% {
-    background-color: #ffeb3b;
-    transform: scale(1.05);
-  }
-}
-
-/* Responsive Design */
+/* Responsive design */
 @media (max-width: 600px) {
   .game-board {
-    grid-template-columns: repeat(5, 50px); /* Smaller cells on small screens */
-    grid-template-rows: repeat(5, 50px);
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 8px;
   }
 
   .cell {
-    width: 50px;
-    height: 50px;
-    font-size: 20px; /* Adjust font size */
+    width: 60px;
+    height: 60px;
+    font-size: 14px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  input[type="text"], button {
+    font-size: 16px;
+    padding: 10px 15px;
   }
 }
