@@ -58,13 +58,13 @@ To get started with the Multiplayer Chess Board Game, follow these steps:
 
 4. **Start the backend server**:
     ```bash
-    cd ../backend
+    cd ../game
     npm start
     ```
 
 5. **Start the frontend server**:
     ```bash
-    cd ../frontend
+    cd ../hitwicket_gmae
     npm start
     ```
 
